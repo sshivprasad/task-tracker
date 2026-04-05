@@ -1,16 +1,48 @@
-# React + Vite
+# Work Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal daily journal app for tracking work - built to replace the boring spreadsheet habit with something actually fun to use.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Each day gets its own journal page with:
 
-## React Compiler
+- **Planned Tasks** - what you set out to do that day
+- **Unplanned Tasks** - things that came up during the day
+- **Task status tracking** - To Do → In Progress → Done → Carry Forward → Discontinued
+- **Calls log** - log calls with time, participants, and notes
+- **Discussions & Notes** - free-text sections for key decisions and general notes
+- **Day completion score** - a live ring showing % of tasks done
+- **Streak counter** - consecutive days with logged work
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Tasks marked **Carry Forward** automatically appear as planned tasks the next day you open.
 
-## Expanding the ESLint configuration
+## Running locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+## Data & privacy
+
+All data is stored locally in your browser via **IndexedDB** - nothing is sent to any server. Use the **Export / Import** button in the sidebar to back up your data as a `.json` file or restore it on a new device.
+
+## Tech stack
+
+- [React 19](https://react.dev/) + [Vite](https://vite.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Dexie.js](https://dexie.org/) (IndexedDB)
+- [Zustand](https://zustand-demo.pmnd.rs/)
+- [React Router v7](https://reactrouter.com/)
+
+## Roadmap
+
+- [ ] Wrap with [Tauri](https://tauri.app/) for a native desktop app
+- [ ] Weekly summary view
+- [ ] Search across all days
+- [ ] Recurring tasks
+- [ ] Dark mode
+- [ ] Keyboard shortcuts
