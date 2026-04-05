@@ -37,13 +37,3 @@ export const PRIORITY_CONFIG = {
   high: { label: 'High', color: 'bg-orange-100 text-orange-600', dot: 'bg-orange-400' },
 }
 
-export const TAG_COLORS = [
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-300' },
-  { id: 'teal', label: 'Teal', bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-300' },
-  { id: 'orange', label: 'Orange', bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300' },
-  { id: 'pink', label: 'Pink', bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-300' },
-  { id: 'cyan', label: 'Cyan', bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-300' },
-  { id: 'yellow', label: 'Yellow', bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' },
-  { id: 'green', label: 'Green', bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
-  { id: 'blue', label: 'Blue', bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300' },
-]

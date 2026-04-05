@@ -8,26 +8,24 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { PRIORITY_CONFIG, TAG_COLORS } from '@/lib/constants'
+import { PRIORITY_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 export default function AddTaskDialog({ open, onClose, onAdd, type }) {
   const [title, setTitle] = useState('')
   const [notes, setNotes] = useState('')
   const [priority, setPriority] = useState('medium')
-  const [tags, setTags] = useState([])
 
   function reset() {
     setTitle('')
     setNotes('')
     setPriority('medium')
-    setTags([])
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (!title.trim()) return
-    await onAdd({ title: title.trim(), notes, priority, tags })
+    await onAdd({ title: title.trim(), notes, priority })
     reset()
     onClose()
   }
@@ -35,10 +33,6 @@ export default function AddTaskDialog({ open, onClose, onAdd, type }) {
   function handleClose() {
     reset()
     onClose()
-  }
-
-  function toggleTag(id) {
-    setTags(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
   }
 
   return (
@@ -91,28 +85,6 @@ export default function AddTaskDialog({ open, onClose, onAdd, type }) {
                 >
                   <span className={cn('w-2 h-2 rounded-full', cfg.dot)} />
                   {cfg.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-600">Tags</label>
-            <div className="flex flex-wrap gap-1.5">
-              {TAG_COLORS.map(tag => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => toggleTag(tag.id)}
-                  className={cn(
-                    'text-xs px-2.5 py-1 rounded-full border font-medium transition-all',
-                    tag.bg, tag.text, tag.border,
-                    tags.includes(tag.id)
-                      ? 'ring-2 ring-offset-1 ring-violet-400 opacity-100'
-                      : 'opacity-50 hover:opacity-80'
-                  )}
-                >
-                  {tag.label}
                 </button>
               ))}
             </div>

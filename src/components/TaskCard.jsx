@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Trash2, ChevronDown, ChevronUp, Tag, Plus, Check, X } from 'lucide-react'
+import { Trash2, ChevronDown, ChevronUp, Plus, Check, X } from 'lucide-react'
 import { updateTask, deleteTask } from '@/db'
-import { STATUS_CONFIG, PRIORITY_CONFIG, TAG_COLORS } from '@/lib/constants'
+import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -9,12 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-
 function SubtaskItem({ subtask, onToggle, onDelete, onRename }) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(subtask.title)
@@ -128,14 +122,6 @@ export default function TaskCard({ task }) {
     await updateTask(task.id, { priority })
   }
 
-  async function handleTagToggle(tagId) {
-    const current = task.tags || []
-    const tags = current.includes(tagId)
-      ? current.filter(t => t !== tagId)
-      : [...current, tagId]
-    await updateTask(task.id, { tags })
-  }
-
   async function handleAddSubtask() {
     const trimmed = newSubtask.trim()
     if (!trimmed) { setAddingSubtask(false); return }
@@ -161,7 +147,6 @@ export default function TaskCard({ task }) {
   const status = STATUS_CONFIG[task.status] || STATUS_CONFIG.todo
   const priority = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium
   const isDiscontinued = task.status === 'discontinued'
-  const activeTags = TAG_COLORS.filter(t => task.tags?.includes(t.id))
 
   return (
     <div
@@ -227,23 +212,6 @@ export default function TaskCard({ task }) {
             </p>
           )}
 
-          {/* Tags */}
-          {activeTags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {activeTags.map(tag => (
-                <span
-                  key={tag.id}
-                  className={cn(
-                    'text-xs px-1.5 py-0.5 rounded-full border font-medium',
-                    tag.bg, tag.text, tag.border
-                  )}
-                >
-                  {tag.label}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Subtask count badge (collapsed) */}
           {subtasks.length > 0 && !expanded && (
             <button
@@ -278,33 +246,6 @@ export default function TaskCard({ task }) {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Tag picker */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-violet-500">
-              <Tag size={14} />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-48 p-2">
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Tags</p>
-            <div className="flex flex-wrap gap-1.5">
-              {TAG_COLORS.map(tag => (
-                <button
-                  key={tag.id}
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={cn(
-                    'text-xs px-2 py-0.5 rounded-full border font-medium transition-all',
-                    tag.bg, tag.text, tag.border,
-                    task.tags?.includes(tag.id) ? 'ring-2 ring-offset-1 ring-violet-400' : 'opacity-60 hover:opacity-100'
-                  )}
-                >
-                  {tag.label}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
 
         {/* Expand / delete */}
         <button

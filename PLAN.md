@@ -1,22 +1,23 @@
-# Task Tracker - Daily Journal App
+# Work Tracker - Daily Journal App
 
 ## Stack
 
-- **React 19 + Vite** (existing boilerplate)
+- **React 19 + Vite**
 - **Tailwind CSS v4** - utility-first styling
 - **shadcn/ui** - polished component library (you own the code)
 - **Dexie.js** - clean IndexedDB wrapper for local-first persistence
-- **Zustand** - lightweight state management
-- **React Router v7** - routing (useful now, essential when Tauri wrapping)
+- **Zustand** - lightweight state management (sidebar state)
+- **React Router v7** - routing
 - **date-fns** - date utilities
+- **Tauri v2** - desktop app wrapper (set up, production build pending)
 
 ## Data Model (IndexedDB via Dexie)
 
 Three tables:
 
-- **`workdays`** - `{ id: "2026-04-04", date, streak }`
-- **`tasks`** - `{ id, dayId, title, type: "planned"|"unplanned", status: "todo"|"in_progress"|"done"|"carry_forward"|"discontinued", priority, tags[], notes }`
-- **`day_logs`** - `{ id, dayId, calls: [{title, time, participants, notes}], discussions: string, generalNotes: string }`
+- **`workdays`** - `{ id: "2026-04-04", date }`
+- **`tasks`** - `{ id, dayId, title, type: "planned"|"unplanned", status: "todo"|"in_progress"|"done"|"carry_forward"|"discontinued", priority: "low"|"medium"|"high", subtasks: [{id, title, done}], notes }`
+- **`day_logs`** - `{ dayId, calls: [{id, title, time, participants, notes}], discussions: string, generalNotes: string }`
 
 Tasks marked `carry_forward` automatically seed the next day's planned tasks when that day is first opened.
 
@@ -26,37 +27,47 @@ Tasks marked `carry_forward` automatically seed the next day's planned tasks whe
 App Shell
 ├── Sidebar (date nav + streak + Export/Import)
 └── Main Panel - DayView
-    ├── Day Header (date, completion score badge)
-    ├── Planned Tasks (status chips + inline edit)
-    ├── Unplanned Tasks (add on the fly)
+    ├── Day Header (date, completion score ring)
+    ├── Planned Tasks (status badge + subtasks + inline edit)
+    ├── Unplanned Tasks (same as above)
     ├── Calls Log (time, who, notes)
-    └── Notes & Discussions (free text)
+    └── Notes & Discussions (two tabs: Discussions / Notes)
 ```
 
 ## Task Status Flow & Colors
 
-Each task moves through statuses via a single-click chip:
+Each task status is set via a dropdown badge on the card:
 
 - `todo` → amber
 - `in_progress` → blue
-- `done` → green (confetti pop animation)
-- `carry_forward` → purple (auto-moves to next day)
+- `done` → green (scale animation on completion)
+- `carry_forward` → purple (auto-moves to next day's planned tasks)
 - `discontinued` → red/strikethrough
+
+## Task Card Features
+
+- Click status badge → dropdown to change status
+- Click title → inline edit
+- Click priority dot → dropdown (Low / Medium / High)
+- Expand arrow → reveals subtasks checklist + notes
+- Subtasks: add, tick (green check), rename inline, delete
+- Subtask count badge (e.g. 2/4) visible when card is collapsed, turns green when all done
+- Hover card → expand arrow + delete button appear
 
 ## Fun/Motivational Touches
 
-- **Day completion score** - % of planned tasks done, shown as a color ring in the header
+- **Day completion score** - % of tasks done (excluding discontinued), shown as a colour ring in the header
 - **Streak counter** in sidebar - consecutive days with at least one task logged
-- **Micro-animation** on task completion (scale + color flash)
-- **Colorful tag system** - assign a color tag to tasks (e.g. "meetings" = orange, "deep work" = teal)
-- **Carry Forward is automatic** - no manual copy-paste; discontinued tasks are archived with a reason
+- **Micro-animation** on task completion (scale + colour flash)
+- **Carry Forward is automatic** - no manual copy-paste
 
 ## File Structure
 
 ```
 src/
 ├── components/
-│   ├── ui/              ← shadcn generated components
+│   ├── ui/                ← shadcn generated components
+│   ├── AddTaskDialog.jsx  ← new task dialog (title, notes, priority)
 │   ├── Sidebar.jsx
 │   ├── DayHeader.jsx
 │   ├── TaskCard.jsx
@@ -67,24 +78,25 @@ src/
 ├── pages/
 │   └── DayView.jsx
 ├── db/
-│   └── index.js         ← Dexie schema + helpers
+│   └── index.js           ← Dexie schema + CRUD helpers
 ├── store/
-│   └── useDayStore.js   ← Zustand store
+│   └── useDayStore.js     ← Zustand (sidebar open/close state)
 ├── hooks/
-│   └── useDay.js        ← data fetching hook
-└── App.jsx              ← Router + layout shell
+│   └── useDay.js          ← useLiveQuery hooks for day data
+├── lib/
+│   ├── constants.js       ← STATUS_CONFIG, PRIORITY_CONFIG
+│   └── utils.js           ← shadcn cn() helper
+└── App.jsx                ← Router + layout shell
+src-tauri/                 ← Tauri v2 Rust project
+├── src/
+├── icons/
+├── Cargo.toml
+└── tauri.conf.json
 ```
-
-## Key Files to Replace/Create
-
-- `src/App.jsx` - replace boilerplate with Router + layout shell
-- `src/App.css` and `src/index.css` - replace with Tailwind directives + CSS variables for the color theme
-- `src/db/index.js` - new Dexie database setup
-- `src/store/useDayStore.js` - new Zustand store
 
 ## Export / Import (Data Portability)
 
-An **Export** button in the sidebar dumps your entire database to a single `.json` file:
+Export button in sidebar dumps entire database to a `.json` file:
 
 ```json
 {
@@ -96,26 +108,25 @@ An **Export** button in the sidebar dumps your entire database to a single `.jso
 }
 ```
 
-An **Import** button lets you select that file on any machine and restore everything. A confirmation dialog warns you before overwriting existing data. This covers the "new laptop" and "manual backup" scenarios with zero infrastructure.
+Import restores from that file with a confirmation dialog before overwriting.
+Works identically in browser and Tauri desktop app.
 
-The same Export/Import works unchanged inside Tauri - no modifications needed when wrapping.
+**Optional Tauri enhancement (for later):** Auto-save export to OneDrive/Dropbox folder via Tauri's native filesystem access.
 
-**Optional Tauri enhancement (for later):** Tauri gives native filesystem access, so you could auto-save the export to a OneDrive/Dropbox folder on a schedule, making backups happen silently without clicking Export manually. Not needed upfront - worth revisiting once the desktop app is set up.
+## Tauri Setup
 
-## Tauri-Readiness
+- Tauri v2 initialised in `src-tauri/`
+- App identifier: `com.worktracker.app`
+- Window: 1280×800 (min 900×600)
+- Icons generated from `src-tauri/app-icon-source.svg`
+- Dev: `npm run tauri dev`
+- Build: `npm run tauri build` → NSIS installer in `src-tauri/target/release/bundle/`
+- Requires: Rust + Microsoft C++ Build Tools (Visual Studio 2022)
 
-Everything is local-first (IndexedDB), no backend required. When ready to wrap with Tauri, the only changes needed are: add `tauri` to `package.json` scripts, configure `tauri.conf.json`, and optionally swap IndexedDB for Tauri's SQLite plugin for better querying. No UI code changes needed.
+## Decisions Log
 
-## Build Order (Todos)
-
-1. Install dependencies: tailwindcss, shadcn/ui, dexie, zustand, react-router-dom, date-fns
-2. Configure Tailwind CSS v4 and set up CSS variables for the color theme in index.css
-3. Initialize shadcn/ui and add core components: Button, Badge, Card, Dialog, Input, Textarea, Popover
-4. Create `src/db/index.js` with Dexie schema for workdays, tasks, and day_logs tables + carry-forward seeding logic
-5. Create Zustand store (`src/store/useDayStore.js`) for current day state and task CRUD operations
-6. Rewrite `App.jsx` with React Router, main layout (sidebar + main panel), and wipe boilerplate CSS
-7. Build Sidebar component: date navigation, streak counter, mini calendar
-8. Build DayView page with DayHeader (date + completion score), Planned Tasks section, Unplanned Tasks section
-9. Build TaskCard with inline status cycling, priority indicator, color tags, and done animation
-10. Build CallsLog and NotesPanel components for the bottom sections of the day view
-11. Build Export/Import feature - dump all IndexedDB data to a JSON file and restore from one, accessible from the sidebar
+| Decision | Outcome |
+|---|---|
+| Colour tags | Removed - arbitrary colours with no fixed meaning. Can revisit as named categories (Meeting, Deep Work, Review etc.) if needed |
+| Zustand | Kept minimal - only sidebar toggle state. All data reactivity handled by Dexie `useLiveQuery` |
+| Task creation | Dialog with title, notes, priority. All fields also editable inline on the card after creation |
