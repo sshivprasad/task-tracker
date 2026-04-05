@@ -10,4 +10,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // Ensure Vite always serves on 5173 so Tauri can connect reliably
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
 })

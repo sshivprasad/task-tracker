@@ -68,6 +68,7 @@ export async function addTask(dayId, fields, type = 'planned') {
     priority,
     tags,
     notes,
+    subtasks: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   })
